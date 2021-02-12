@@ -1,0 +1,83 @@
+service: boilerplate
+app: boilerplate
+org: kenzan8000
+
+plugins:
+  - serverless-dotenv-plugin
+  - serverless-offline
+  - serverless-provisioned-concurrency-autoscaling
+  - serverless-api-gateway-throttling
+  - serverless-domain-manager
+  - serverless-plugin-datadog
+  - serverless-layers
+
+custom:
+  customDomain:
+    autoDomain: false
+    certificateName: ${env:DOMAIN_CERTIFICATE_NAME}
+    createRoute53Record: true
+    domainName: ${env:DOMAIN_NAME}
+    securityPolicy: tls_1_2
+    stage: ${opt:stage}
+  datadog:
+    flushMetricsToLogs: true
+    apiKey: ${env:DATADOG_API_KEY}
+    addLayers: true
+    logLevel: ${env:DATADOG_LOG_LEVEL}
+    enableXrayTracing: false
+    enableDDTracing: true
+    forwarder: ${env:DATADOG_FORWARDER}
+    enableTags: true
+    injectLogContext: true
+  apiGatewayThrottling:
+    maxRequestsPerSecond: ${env:MAX_REQUESTS_PER_SECOND}
+    maxConcurrentRequests: ${env:MAX_CONCURRENT_REQUESTS}
+
+provider:
+  name: aws
+  runtime: nodejs12.x
+  region: us-west-2
+  logRetentionInDays: 1
+  apiGateway:
+    minimumCompressionSize: 1024
+  vpc:
+    id:
+      - ${env:AWS_VPC_ID}
+    securityGroupIds:
+      - ${env:AWS_SECUIRTY_GROUP_1}
+      - ${env:AWS_SECUIRTY_GROUP_2}
+    subnetIds:
+      - ${env:AWS_SUBNET_ID}
+  versionFunctions: false
+  deploymentBucket:
+    name: ${env:AWS_S3_DEPLOYMENT_BUCKET}
+package:
+  individually: true
+  include:
+    - dist/**
+  exclude:
+    - "**"
+functions:
+  index:
+    description: API server of ${env:DOMAIN_NAME}
+    handler: dist/index.handler
+    events:
+      - http:
+          cors: true
+          path: "/"
+          method: any
+      - http:
+          cors: true
+          path: "{proxy+}"
+          method: any
+    provisionedConcurrency: ${env:AWS_LAMBDA_PROVISIONED_CONCURRENCY_MIN}
+    # reservedConcurrency: ${env:AWS_LAMBDA_PROVISIONED_CONCURRENCY_MAX}
+    concurrencyAutoscaling:
+      enabled: true
+      maximum: ${env:AWS_LAMBDA_PROVISIONED_CONCURRENCY_MAX}
+      minimum: ${env:AWS_LAMBDA_PROVISIONED_CONCURRENCY_MIN}
+      usage: ${env:AWS_LAMBDA_PROVISIONED_CONCURRENCY_USAGE}
+      scaleInCooldown: ${env:AWS_LAMBDA_PROVISIONED_CONCURRENCY_SCALE_IN_COOL_DOWN}
+      scaleOutCooldown: ${env:AWS_LAMBDA_PROVISIONED_CONCURRENCY_SCALE_OUT_COOL_DOWN}
+    memorySize: ${env:AWS_LAMBDA_MEMORY_SIZE}
+    timeout: ${env:AWS_LAMBDA_TIMEOUT}
