@@ -1,4 +1,4 @@
-import { HttpStatus, Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { GetCatsIscatQuery, GetCatsIscatResponse } from './cats.dto';
@@ -12,7 +12,7 @@ export class CatsService {
 
   async getIscat(query: GetCatsIscatQuery): Promise<GetCatsIscatResponse> {
     if (!query.q) {
-      return { result: false, statusCode: HttpStatus.BAD_REQUEST, message: 'missing q query.' }
+      throw new HttpException('missing q query.', HttpStatus.BAD_REQUEST);
     }
     /*
     const cats = await this.catsRepository
