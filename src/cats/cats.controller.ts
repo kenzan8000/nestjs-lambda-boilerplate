@@ -8,7 +8,7 @@ export class CatsController {
   constructor(private readonly service: CatsService) {}
 
   @Get('/iscat')
-  @ApiResponse({ status: HttpStatus.OK, type: GetCatsIscatResponse, description: 'API detecting if name of query.cat is a cat.' })
+  @ApiResponse({ status: HttpStatus.OK, type: GetCatsIscatResponse, description: 'API detecting if name of query.q is a cat.' })
   async getIscat(@Query() query: GetCatsIscatQuery): Promise<GetCatsIscatResponse> {
     return await this.service.getIscat(query)
   }

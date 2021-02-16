@@ -5,6 +5,7 @@ import * as mysql from 'mysql2';
 import { CatsController } from './cats.controller';
 import { CatsService } from './cats.service';
 import { MockRepository } from '../common/database/mock-repository';
+import { HttpStatus } from '@nestjs/common';
 
 describe('CatsController', () => {
   let controller: CatsController;
@@ -49,4 +50,18 @@ describe('CatsController', () => {
     expect(controller).toBeDefined();
     expect(service).toBeDefined();
   });
+
+  describe('CatsController#getIscat', () => {
+    it(`should return statusCode OK`, async () => {
+      jest.spyOn(service, 'getIscat').mockImplementation(() => Promise.resolve({ message: "Hello is a cat.", statusCode: HttpStatus.OK, result: true }))
+      const res = await controller.getIscat({ q: 'Hello' })
+      expect(res.statusCode).toEqual(HttpStatus.OK)
+    })
+
+    it(`should return statusCode BAD_REQUEST when query isn't set`, async () => {
+      jest.spyOn(service, 'getIscat').mockImplementation(() => Promise.resolve({ message: "missing q query.", statusCode: HttpStatus.BAD_REQUEST, result: false }))
+      const res = await controller.getIscat({ q: undefined })
+      expect(res.statusCode).toEqual(HttpStatus.BAD_REQUEST)
+    })
+  })
 });

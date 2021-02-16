@@ -6,21 +6,24 @@ import { GetCatsIscatQuery, GetCatsIscatResponse } from './cats.dto';
 @Injectable()
 export class CatsService {
   constructor(
-    /*
-    @InjectRepository(Cats)
-    private catsRepository: Repository<Cats>,
-    */
+    // @InjectRepository(Cats)
+    // private catsRepository: Repository<Cats>,
   ) {}
 
   async getIscat(query: GetCatsIscatQuery): Promise<GetCatsIscatResponse> {
-    if (!query.cat) {
-      return { result: false, statusCode: HttpStatus.BAD_REQUEST, message: 'missing cat query.' }
+    if (!query.q) {
+      return { result: false, statusCode: HttpStatus.BAD_REQUEST, message: 'missing q query.' }
     }
-
+    /*
+    const cats = await this.catsRepository
+      .createQueryBuilder('cat')
+      .where('cat.name = :cat', { cat: query.q })
+      .getMany()
+    */
     return {
       result: true,
       statusCode: HttpStatus.OK,
-      message: `${query.cat} is a cat.`
+      message: `${query.q} is a cat.`
     }
   }
 
